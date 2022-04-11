@@ -20,3 +20,4 @@ TorchDyn: Implicit Models and Neural Numerical Methods in PyTorch. Code: https:/
 
 [2] William Gilpin. "Chaos as an interpretable benchmark for forecasting and data-driven modelling" 
 Advances in Neural Information Processing Systems (NeurIPS) 2021 https://arxiv.org/abs/2110.05266
+(dysts: https://github.com/williamgilpin/dysts)
