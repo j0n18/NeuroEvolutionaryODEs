@@ -1,0 +1,8 @@
+pytorch_lightning
+sklearn
+matplotlib
+torchdyn==1.0.1
+dysts
+pandas
+h5py
+scipy
