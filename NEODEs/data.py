@@ -1,7 +1,6 @@
 import logging
 import os
 
-import dotenv
 import h5py
 import numpy as np
 import pytorch_lightning as pl
@@ -35,6 +34,20 @@ class NeuralODEDataModule(pl.LightningDataModule):
         self.model = getattr(flows, system)()
         self.fpath = f"data/Lorenz_system_{self.hparams.n_samples}_{self.hparams.n_timesteps}_{self.hparams.noise}.h5"        
 
+    def save_dist(self, fpath, train_dist, val_dist, test_dist):
+        with h5py.File(fpath, "w") as h5file:
+            h5file.create_dataset("train_data", data=train_dist)
+            h5file.create_dataset("valid_data", data=val_dist)
+            h5file.create_dataset("test_data", data=test_dist)
+
+    def load_dist(self, fpath):
+        with h5py.File(fpath, "r") as h5file:
+            # Load the data
+            train_dist = to_tensor(h5file["train_data"][()])
+            valid_dist = to_tensor(h5file["valid_data"][()])
+            test_dist = to_tensor(h5file["test_data"][()])
+        return train_dist, valid_dist, test_dist
+    
     def setup(self):
         hps = self.hparams
         # Load data arrays from file
@@ -65,20 +78,6 @@ class NeuralODEDataModule(pl.LightningDataModule):
         self.train_ds = TensorDataset(train_dist)
         self.valid_ds = TensorDataset(valid_dist)
         self.test_ds = TensorDataset(test_dist)
-
-    def save_dist(self, fpath, train_dist, val_dist, test_dist):
-        with h5py.File(fpath, "w") as h5file:
-            h5file.create_dataset("train_data", data=train_dist)
-            h5file.create_dataset("valid_data", data=val_dist)
-            h5file.create_dataset("test_data", data=test_dist)
-
-    def load_dist(self, fpath):
-        with h5py.File(fpath, "r") as h5file:
-            # Load the data
-            train_dist = to_tensor(h5file["train_data"][()])
-            valid_dist = to_tensor(h5file["valid_data"][()])
-            test_dist = to_tensor(h5file["test_data"][()])
-        return train_dist, valid_dist, test_dist
     
     def train_dataloader(self):
         train_dl = DataLoader(
