@@ -46,7 +46,8 @@ class NeuralODEDataModule(pl.LightningDataModule):
                 return_times=False,
                 noise=hps.noise,
             )
-            trajectory = latents.reshape(hps.n_samples, hps.n_timesteps, -1)
+            trajectory = trajectory.reshape(hps.n_samples, hps.n_timesteps, -1)
+            inds = np.arange(hps.n_samples)
             train_inds, test_inds = train_test_split(
                 inds, test_size=0.2, random_state=hps.seed
             )
@@ -59,7 +60,7 @@ class NeuralODEDataModule(pl.LightningDataModule):
             if hps.save_dist:
                 save_dist(self.fpath)
         else:
-            train_dist, valid_dist, test_dist = load_data(self.fpath)
+            train_dist, valid_dist, test_dist = load_dist(self.fpath)
         # Store datasets
         self.train_ds = TensorDataset(train_dist)
         self.valid_ds = TensorDataset(valid_dist)
