@@ -25,41 +25,65 @@ class NeuralODEDataModule(pl.LightningDataModule):
         seed: int = 0,
         batch_size: int = 64,
         noise: float = 0.1,
-        make_dist: bool = False,
-        save_dist: bool = False,
+        make_data: bool = False,
+        save_data: bool = False,
     ):
         super().__init__()
         self.save_hyperparameters()
         # Instantiate the dynamical system
         self.model = getattr(flows, system)()
-        self.fpath = f"data/Lorenz_system_{self.hparams.n_samples}_{self.hparams.n_timesteps}_{self.hparams.noise}.h5"        
+        self.fpath = f"datasets\\Lorenz_system_{self.hparams.n_samples}_{self.hparams.n_timesteps}_{self.hparams.noise}.h5"        
 
-    def save_dist(self, fpath, train_dist, val_dist, test_dist):
+    def save_data(self, fpath, train_data, valid_data, test_data):
+
+        import pdb; pdb.set_trace();
+
+        train_dist, train_tpts = train_data
+        valid_dist, valid_tpts = valid_data
+        test_dist, test_tpts = test_data
+
         with h5py.File(fpath, "w") as h5file:
-            h5file.create_dataset("train_data", data=train_dist)
-            h5file.create_dataset("valid_data", data=val_dist)
-            h5file.create_dataset("test_data", data=test_dist)
 
-    def load_dist(self, fpath):
+            h5file.create_dataset("train_dist", data=train_dist)
+            h5file.create_dataset("valid_dist", data=valid_dist)
+            h5file.create_dataset("test_dist", data=test_dist)
+
+            h5file.create_dataset("train_tpts", data=train_tpts)
+            h5file.create_dataset("valid_tpts", data=valid_tpts)
+            h5file.create_dataset("test_tpts", data=test_tpts)
+
+    def load_data(self, fpath):
         with h5py.File(fpath, "r") as h5file:
+
             # Load the data
-            train_dist = to_tensor(h5file["train_data"][()])
-            valid_dist = to_tensor(h5file["valid_data"][()])
-            test_dist = to_tensor(h5file["test_data"][()])
-        return train_dist, valid_dist, test_dist
+            train_dist = to_tensor(h5file["train_dist"][()])
+            valid_dist = to_tensor(h5file["valid_dist"][()])
+            test_dist = to_tensor(h5file["test_dist"][()])
+
+            train_tpts = to_tensor(h5file["train_tpts"][()])
+            valid_tpts = to_tensor(h5file["valid_tpts"][()])
+            test_tpts = to_tensor(h5file["test_tpts"][()])
+
+        train_data = (train_dist, train_tpts)
+        valid_data = (valid_dist, valid_tpts)
+        test_data = (test_dist, test_tpts)
+
+        return train_data, valid_data, test_data
     
-    def setup(self):
+    def setup(self, stage=None):
         hps = self.hparams
         # Load data arrays from file
-        if hps.make_dist:
-            trajectory = self.model.make_trajectory(
+        if hps.make_data:
+            timepoints, trajectory = self.model.make_trajectory(
                 n=hps.n_samples * hps.n_timesteps,
                 resample=True,
                 pts_per_period=hps.pts_per_period,
-                return_times=False,
+                return_times = True, #False,
                 noise=hps.noise,
             )
             trajectory = trajectory.reshape(hps.n_samples, hps.n_timesteps, -1)
+            timepoints = timepoints.reshape(hps.n_samples, hps.n_timesteps, -1)
+
             inds = np.arange(hps.n_samples)
             train_inds, test_inds = train_test_split(
                 inds, test_size=0.2, random_state=hps.seed
@@ -67,17 +91,42 @@ class NeuralODEDataModule(pl.LightningDataModule):
             train_inds, valid_inds = train_test_split(
                 train_inds, test_size=0.2, random_state=hps.seed
             )
+
             train_dist = trajectory[train_inds]
-            val_dist = trajectory[valid_inds]
+            valid_dist = trajectory[valid_inds] 
             test_dist = trajectory[test_inds]
-            if hps.save_dist:
-                save_dist(self.fpath)
+
+            train_tpts = timepoints[train_inds]
+            valid_tpts = timepoints[valid_inds] 
+            test_tpts = timepoints[test_inds]
+
+            train_data = (train_dist, train_tpts)
+            valid_data = (valid_dist, valid_tpts)
+            test_data = (test_dist, test_tpts)
+
+            if hps.save_data:
+                self.save_data(self.fpath, train_data, valid_data, test_data)
         else:
-            train_dist, valid_dist, test_dist = load_dist(self.fpath)
+            train_data, valid_data, test_data = self.load_data(self.fpath)
+
         # Store datasets
-        self.train_ds = TensorDataset(train_dist)
-        self.valid_ds = TensorDataset(valid_dist)
-        self.test_ds = TensorDataset(test_dist)
+        train_dist, train_tpts = train_data
+        valid_dist, valid_tpts = valid_data
+        test_dist, test_tpts = test_data
+
+        if (~torch.is_tensor(train_dist) == False) or (~torch.is_tensor(train_tpts) == False):
+            train_dist = to_tensor(train_dist)
+            train_tpts = to_tensor(train_tpts)
+        if (~torch.is_tensor(valid_dist) == False) or (~torch.is_tensor(valid_tpts) == False):
+            valid_dist = to_tensor(valid_dist)
+            valid_tpts = to_tensor(valid_tpts)
+        if (~torch.is_tensor(test_dist) == False) or (~torch.is_tensor(test_tpts) == False):
+            test_dist = to_tensor(test_dist)
+            test_tpts = to_tensor(test_tpts)
+
+        self.train_ds = TensorDataset(train_dist, train_tpts)
+        self.valid_ds = TensorDataset(valid_dist, valid_tpts)
+        self.test_ds = TensorDataset(test_dist, test_tpts)
     
     def train_dataloader(self):
         train_dl = DataLoader(
