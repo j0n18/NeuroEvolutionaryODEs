@@ -6,3 +6,4 @@ dysts
 pandas
 h5py
 scipy
+python-dotenv
