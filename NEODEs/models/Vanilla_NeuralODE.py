@@ -31,23 +31,6 @@ class VanillaNeuralODE(pl.LightningModule):
         self.save_hyperparameters()
 
     def forward(self, x, t_span):
-        import pdb; pdb.set_trace();
+        #import pdb; pdb.set_trace();
 
-        return self.model.trajectory(x,t_span) #[-1]
-
-        
-        #^why is this output the wrong size in the first dimension?
-        #the size change is within this function:
-        #https://github.com/DiffEqML/torchdyn/blob/master/torchdyn/numerics/odeint.py
-        #https://github.com/DiffEqML/torchdyn/blob/master/torchdyn/numerics/odeint.py#L88
-        #https://github.com/DiffEqML/torchdyn/blob/master/torchdyn/numerics/odeint.py#L385
-        #^It is stacking iterations of solutions and returning that. Why?
-        #First condition of this must be satisfied, because the other is False by default:
-        #https://github.com/DiffEqML/torchdyn/blob/master/torchdyn/numerics/odeint.py#L384
-        #https://github.com/DiffEqML/torchdyn/blob/master/torchdyn/numerics/odeint.py#L387
-
-        #it gives a full n_timesteps evaluation from every point inside t_span back.
-        #What do we do with that? (this sounds familiar)
-        
-        #for shapes to make sense with TrajectoryLearner, we somehow need to return something with the same
-        #shape as an element of x[batch] : n_timesteps x dim
+        return self.model(x,t_span) #.trajectory(x,t_span) #[-1]
