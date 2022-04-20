@@ -11,9 +11,6 @@ from models.Vanilla_NeuralODE import VanillaNeuralODE
 from example_params import (datamodule_params,
                             model_params)
 
-#much of this comes from this tutorial notebook:
-#https://github.com/DiffEqML/torchdyn/blob/master/tutorials/module1-neuralde/m1a_neural_ode_cookbook.ipynb
-#This is just a script for testing models to make sure they train properly.
 
 log = logging.getLogger(__name__)
 
@@ -36,4 +33,4 @@ node_data, node_times = trained_learn.forward(valid_data, valid_times)
 
 import pdb; pdb.set_trace();
 
-plot_3D_trajectories(valid_data, node_data + 1)
+plot_3D_trajectories(valid_data, node_data)
