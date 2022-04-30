@@ -5,7 +5,7 @@ from torchdyn.utils import *
 from data import NeuralODEDataModule
 from models.NEAT_NeuralODE import NEAT_NeuralODE
 from models.config import config as c
-from neat.visualize import draw_net
+#from neat.visualize import draw_net
 import neat.population as pop
 from tqdm import tqdm
 from utils import NEODE_fwd, get_similarity_score
@@ -72,7 +72,7 @@ if solution is not None:
         found_minimal_solution += 1
 
     num_of_solutions += 1
-    draw_net(solution, view=True, filename='./images/solution-' + str(num_of_solutions), show_disabled=True)
+    #draw_net(solution, view=True, filename='./images/solution-' + str(num_of_solutions), show_disabled=True)
 
 
 #do a forward pass of the model on the validation dataset:
@@ -83,12 +83,10 @@ node_data, node_times = NEODE_fwd(model, node_datamodule)
 
 csim = get_similarity_score(valid_data, node_data)
 
-
-
-node_data = node_data.detach().numpy()
+#node_data = node_data.detach().numpy()
 
 #plot neural ODE trajectories after just doing architectural optimization:
-plot_3D_trajectories(valid_data, node_data, model_name = "NEAT Neural ODE")
+plot_3D_trajectories(valid_data, node_data, model_name = "NEAT Neural ODE (before training)")
 
 print('Similarity Score:', csim)
 print('Execution time for NEAT Neural ODE evolution in seconds: ' + str(executionTime))
@@ -126,3 +124,14 @@ trainer.fit(model = learn, datamodule=node_datamodule)
 
 executionTime = (time.time() - startTime)
 print('Execution time for NEAT Neural ODE weight training in seconds: ' + str(executionTime))
+
+valid_data, valid_times = node_datamodule.valid_ds.tensors
+node_data, node_times = learn.forward(valid_data, valid_times)
+
+plot_3D_trajectories(valid_data, node_data, model_name = "NEAT Neural ODE (after training)")
+
+mse = get_similarity_score(valid_data, node_data)
+
+print('Similarity Score:', mse)
+
+import pdb; pdb.set_trace();
