@@ -4,7 +4,8 @@ from torchdyn.datasets import *
 from torchdyn.utils import *
 from data import NeuralODEDataModule
 from pytorch_lightning import Trainer
-from utils import NEODE_fwd, get_r2_score
+from utils import NEODE_fwd, get_similarity_score
+from plotting import plot_3D_trajectories
 
 from learners import TrajectoryLearner
 from models.Vanilla_NeuralODE import VanillaNeuralODE
@@ -64,6 +65,10 @@ print('Execution time for Vanilla Neural ODE in seconds: ' + str(executionTime))
 valid_data, valid_times = node_datamodule.valid_ds.tensors
 node_data, node_times = NEODE_fwd(model, node_datamodule)
 
-#r2 = get_r2_score(valid_data, node_data)
+plot_3D_trajectories(valid_data, node_data, model_name = "NEAT Neural ODE")
 
-#print('R^2:', r2)
+r2 = get_similarity_score(valid_data, node_data)
+
+print('Similarity Score:', r2)
+
+#import pdb; pdb.set_trace();
