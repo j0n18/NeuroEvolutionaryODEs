@@ -29,7 +29,7 @@ model_ckpt_params = {
     "auto_insert_metric_name": True,
 }
 
-callbacks = [ModelCheckpoint(**model_ckpt_params)]
+callbacks = [] #[ModelCheckpoint(**model_ckpt_params)]
 
 csv_logger_params = {"save_dir": ".", "version": "", "name": ""}
 tensorboard_logger_params = {"save_dir": ".", "version": "", "name": ""}
