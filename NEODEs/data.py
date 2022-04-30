@@ -71,6 +71,7 @@ class NeuralODEDataModule(pl.LightningDataModule):
         return train_data, valid_data, test_data
     
     def setup(self, stage=None):
+        #import pdb; pdb.set_trace();
         hps = self.hparams
         # Load data arrays from file
         if hps.make_data:
@@ -114,13 +115,13 @@ class NeuralODEDataModule(pl.LightningDataModule):
         valid_dist, valid_tpts = valid_data
         test_dist, test_tpts = test_data
 
-        if (~torch.is_tensor(train_dist) == False) or (~torch.is_tensor(train_tpts) == False):
+        if (torch.is_tensor(train_dist) == False) or (torch.is_tensor(train_tpts) == False):
             train_dist = to_tensor(train_dist)
             train_tpts = to_tensor(train_tpts)
-        if (~torch.is_tensor(valid_dist) == False) or (~torch.is_tensor(valid_tpts) == False):
+        if (torch.is_tensor(valid_dist) == False) or (torch.is_tensor(valid_tpts) == False):
             valid_dist = to_tensor(valid_dist)
             valid_tpts = to_tensor(valid_tpts)
-        if (~torch.is_tensor(test_dist) == False) or (~torch.is_tensor(test_tpts) == False):
+        if (torch.is_tensor(test_dist) == False) or (torch.is_tensor(test_tpts) == False):
             test_dist = to_tensor(test_dist)
             test_tpts = to_tensor(test_tpts)
 
