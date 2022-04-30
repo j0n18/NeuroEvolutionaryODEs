@@ -63,12 +63,12 @@ executionTime = (time.time() - startTime)
 print('Execution time for Vanilla Neural ODE in seconds: ' + str(executionTime))
 
 valid_data, valid_times = node_datamodule.valid_ds.tensors
-node_data, node_times = NEODE_fwd(model, node_datamodule)
+node_data, node_times = learn.forward(valid_data, valid_times)
 
 plot_3D_trajectories(valid_data, node_data, model_name = "NEAT Neural ODE")
 
-r2 = get_similarity_score(valid_data, node_data)
+mse = get_similarity_score(valid_data, node_data)
 
-print('Similarity Score:', r2)
+print('Similarity Score:', mse)
 
-#import pdb; pdb.set_trace();
+import pdb; pdb.set_trace();
