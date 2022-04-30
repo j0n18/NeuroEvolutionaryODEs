@@ -4,6 +4,7 @@ from torchdyn.datasets import *
 from torchdyn.utils import *
 from data import NeuralODEDataModule
 from pytorch_lightning import Trainer
+from utils import NEODE_fwd, get_r2_score
 
 from learners import TrajectoryLearner
 from models.Vanilla_NeuralODE import VanillaNeuralODE
@@ -45,9 +46,24 @@ log.info("Instantiating Trainer...")
 trainer = Trainer(
     **trainer_params,
     callbacks=callbacks,
-    logger=loggers
+    #logger=loggers
 )
 
 # Fit the trainer using the model and datamodules:
 log.info("Starting training.")
+
+
+import time
+startTime = time.time()
+
 trainer.fit(model = learn, datamodule=node_datamodule)
+
+executionTime = (time.time() - startTime)
+print('Execution time for Vanilla Neural ODE in seconds: ' + str(executionTime))
+
+valid_data, valid_times = node_datamodule.valid_ds.tensors
+node_data, node_times = NEODE_fwd(model, node_datamodule)
+
+#r2 = get_r2_score(valid_data, node_data)
+
+#print('R^2:', r2)
