@@ -5,6 +5,7 @@ import torch
 from data import NeuralODEDataModule
 from sklearn.metrics import r2_score
 import numpy as np
+import torch.nn.functional as F
 
 def instantiate_dataloader(datamodule, phase_flag):
 
@@ -20,8 +21,6 @@ def instantiate_dataloader(datamodule, phase_flag):
 
 
 def NEODE_fwd(model, datamodule, phase_flag = "val"):
-
-    #import pdb; pdb.set_trace();
 
     dataloader = instantiate_dataloader(datamodule, phase_flag)
 
@@ -63,13 +62,18 @@ def NEODE_fwd(model, datamodule, phase_flag = "val"):
     return x_node, t_node
 
 
-def get_r2_score(valid_data, node_data):
-    #import pdb; pdb.set_trace();
-    valid_data = valid_data.detach().cpu().numpy()
-    node_data = node_data.detach().cpu().numpy()
-    valid_data = np.concatenate([*valid_data])
-    node_data = np.concatenate([*node_data])
-    r2 = r2_score(valid_data, node_data)
+def get_similarity_score(valid_data, node_data):
+    '''
+    Similarity is measured using the average cosine similarity
+    evaluated at each point along the trajectory.
+    '''
+    
+    valid_data = valid_data.detach()
+    node_data = node_data.detach()
 
-    return r2
+    valid_data = valid_data.reshape(-1, valid_data.shape[-1])
+    node_data = node_data.reshape(-1, node_data.shape[-1])
+
+    return F.cosine_similarity(valid_data,node_data).mean()
+
 
