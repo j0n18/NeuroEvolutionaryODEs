@@ -2,14 +2,15 @@ import matplotlib.pyplot as plt
 
 def plot_3D_trajectories(valid_data, node_data):
 
-    #import pdb; pdb.set_trace();
+   # import pdb; pdb.set_trace();
 
     n_trials, n_timesteps, dim = valid_data.size()
+    
 
     fig = plt.figure(figsize=(8,8))
     ax = plt.axes(projection='3d')
 
-    for i in range(n_trials//4):
+    for i in range(node_data.shape[0]): #n_trials):
         x_valid = valid_data[i]
         x_node = node_data[i]
 
