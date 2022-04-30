@@ -25,7 +25,7 @@ class VanillaNeuralODE(pl.LightningModule):
         self.model = NeuralODE(self.ffn, 
                                 sensitivity='adjoint', 
                                 solver='tsit5', 
-                                #interpolator=None, 
+                                interpolator=None, 
                                 atol=1e-3, rtol=1e-3)
 
         self.save_hyperparameters()
