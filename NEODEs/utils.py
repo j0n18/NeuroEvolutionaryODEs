@@ -41,7 +41,6 @@ def NEODE_fwd(model, datamodule, phase_flag = "val"):
         t_node = torch.zeros((n_samples, 2))
 
     
-
     for B in range(1,num_batches + 1):
         for (batch_idx, batch) in enumerate(dataloader):
 
@@ -67,13 +66,19 @@ def NEODE_fwd(model, datamodule, phase_flag = "val"):
 
 
 def get_similarity_score(valid_data, node_data):
-    #import pdb; pdb.set_trace();
-    valid_data = valid_data.detach().cpu().numpy()
-    node_data = node_data.detach().cpu().numpy()
-    valid_data = np.concatenate([*valid_data])
-    node_data = np.concatenate([*node_data])
-    r2 = r2_score(valid_data, node_data)
+    '''
+    Similarity is measured using the average cosine similarity
+    evaluated at each point along the trajectory.
+    '''
 
-    return r2
+    valid_data = valid_data.detach()
+    node_data = node_data.detach()
+
+    valid_data = valid_data.reshape(-1, valid_data.shape[-1])
+    node_data = node_data.reshape(-1, node_data.shape[-1])
+
+    mse = torch.mean((node_data - valid_data)**2)
+
+    return mse #F.cosine_similarity(valid_data,node_data).mean()
 
 
