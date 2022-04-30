@@ -3,14 +3,14 @@ from pytorch_lightning.loggers import CSVLogger, TensorBoardLogger
 
 datamodule_params = {
     "system": "Lorenz",
-    "n_samples": 500,
-    "n_timesteps": 100,
-    "pts_per_period": 50,
+    "n_samples": 250, #500,
+    "n_timesteps": 50, #100,
+    "pts_per_period": 25, #50,
     "seed": 0,
-    "batch_size": 32,
+    "batch_size": 8, #32,
     "noise": 0.1,
     "make_data": False, #True,
-    "save_data": False, #True,
+    "save_data": False #True,
 }
 
 model_params = {
@@ -35,8 +35,8 @@ csv_logger_params = {"save_dir": ".", "version": "", "name": ""}
 tensorboard_logger_params = {"save_dir": ".", "version": "", "name": ""}
 
 loggers = [
-    CSVLogger(**csv_logger_params),
+    #CSVLogger(**csv_logger_params),
     #TensorBoardLogger(**tensorboard_logger_params), #turn on when ready to get final results
 ]
 
-trainer_params = {"gradient_clip_val": 200, "max_epochs": 1_000, "log_every_n_steps": 5}
+trainer_params = {"gradient_clip_val": 200, "max_epochs": 100, "log_every_n_steps": 5}
