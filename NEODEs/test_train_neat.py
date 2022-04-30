@@ -3,14 +3,15 @@ import matplotlib.pyplot as plt
 from torchdyn.datasets import *
 from torchdyn.utils import *
 from data import NeuralODEDataModule
-from pytorch_lightning import Trainer
-
-from learners import TrajectoryLearner
-from models.Vanilla_NeuralODE import VanillaNeuralODE
+from models.NEAT_NeuralODE import NEAT_NeuralODE
 from models.config import config as c
-from pytorch_neat.neat.visualize import draw_net
-import pytorch_neat.neat.population as pop
+from neat.visualize import draw_net
+import neat.population as pop
 from tqdm import tqdm
+from utils import NEODE_fwd, get_similarity_score
+from plotting import plot_3D_trajectories
+from learners import TrajectoryLearner
+from pytorch_lightning import Trainer
 
 from example_params import (datamodule_params,
                             model_params,
@@ -24,8 +25,7 @@ from example_params import (datamodule_params,
 
 log = logging.getLogger(__name__)
 
-#import pdb; pdb.set_trace()
-
+#import pdb; pdb.set_trace();
 #Instantiate datamodule:
 log.info("Instantiating datamodule...")
 node_datamodule = NeuralODEDataModule(**datamodule_params)
@@ -33,6 +33,8 @@ node_datamodule.setup()
 
 #Instantiate model:
 log.info("Instantiating model...")
+
+# Do a run with evolutionary training to get the evolved FFN:
 num_of_solutions = 0
 
 avg_num_hidden_nodes = 0
@@ -44,10 +46,19 @@ avg_num_generations = 0
 min_num_generations = 100000
 
 c_neat = c.NeuralODEConfig()
-c_neat.add_data(node_datamodule)
+#c_neat.add_data(node_datamodule) #should now be handled within NeuralODEConfig()
 
 neat = pop.Population(c_neat)
+
+#time the evolution:
+import time
+startTime = time.time()
+
 solution, generation = neat.run()
+
+executionTime = (time.time() - startTime)
+
+#import pdb; pdb.set_trace();
 
 if solution is not None:
     avg_num_generations = ((avg_num_generations * num_of_solutions) + generation) / (num_of_solutions + 1)
@@ -63,6 +74,26 @@ if solution is not None:
     num_of_solutions += 1
     draw_net(solution, view=True, filename='./images/solution-' + str(num_of_solutions), show_disabled=True)
 
+
+#do a forward pass of the model on the validation dataset:
+model = NEAT_NeuralODE(solution, c_neat)
+
+valid_data, valid_times = node_datamodule.valid_ds.tensors
+node_data, node_times = NEODE_fwd(model, node_datamodule)
+
+csim = get_similarity_score(valid_data, node_data)
+
+
+
+node_data = node_data.detach().numpy()
+
+#plot neural ODE trajectories after just doing architectural optimization:
+plot_3D_trajectories(valid_data, node_data, model_name = "NEAT Neural ODE")
+
+print('Similarity Score:', csim)
+print('Execution time for NEAT Neural ODE evolution in seconds: ' + str(executionTime))
+
+#Pass the evolved FFN solution into a Neural ODE wrapper:
 model = NEAT_NeuralODE(solution, c_neat)
 learn = TrajectoryLearner(node_datamodule, model)
 
@@ -82,6 +113,16 @@ trainer = Trainer(
     logger=loggers
 )
 
+#import pdb; pdb.set_trace();
+
 # Fit the trainer using the model and datamodules:
 log.info("Starting training.")
+
+#time the evolution:
+import time
+startTime = time.time()
+
 trainer.fit(model = learn, datamodule=node_datamodule)
+
+executionTime = (time.time() - startTime)
+print('Execution time for NEAT Neural ODE weight training in seconds: ' + str(executionTime))
