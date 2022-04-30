@@ -4,7 +4,7 @@ from torchdyn.datasets import *
 from torchdyn.utils import *
 from data import NeuralODEDataModule
 from pytorch_lightning import Trainer
-from utils import NEODE_fwd, get_similarity_score
+from utils import get_similarity_score
 from plotting import plot_3D_trajectories
 
 from learners import TrajectoryLearner
@@ -33,6 +33,18 @@ node_datamodule.setup()
 log.info("Instantiating model...")
 model = VanillaNeuralODE(**model_params)
 learn = TrajectoryLearner(node_datamodule, model)
+
+
+#get untrained plots and scores:
+valid_data, valid_times = node_datamodule.valid_ds.tensors
+node_data, node_times = learn.forward(valid_data, valid_times)
+
+plot_3D_trajectories(valid_data, node_data, model_name = "NEAT Neural ODE")
+
+mse = get_similarity_score(valid_data, node_data)
+
+print('Similarity Score:', mse)
+
 
 # instantiate the callbacks: (already done by the import)
 log.info("Instantiating callbacks...")
