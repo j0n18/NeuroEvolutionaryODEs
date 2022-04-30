@@ -60,7 +60,7 @@ class NeuralODEConfig:
         model = NeuralODE(phenotype, 
                                 sensitivity='adjoint', 
                                 solver='tsit5', 
-                                #interpolator=None, 
+                                interpolator=None, 
                                 atol=1e-3, rtol=1e-3)
 
         phenotype.to(self.DEVICE)
@@ -83,10 +83,8 @@ class NeuralODEConfig:
                 t_spans[bat,0] = batch_times[0]
                 t_spans[bat,1] = batch_times[-1]
 
-            #these should be inside, but its faster without and performance seems fine
-            _, x_out  = model(x[bat].squeeze(), t_spans[bat])
-
-            x_hat[bat] = x_out[-1]
+                _, x_out  = model(x[bat].squeeze(), t_spans[bat])
+                x_hat[bat] = x_out[-1]
 
             #print(x_hat)
 
