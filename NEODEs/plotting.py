@@ -1,16 +1,21 @@
 import matplotlib.pyplot as plt
+import torch
 
-def plot_3D_trajectories(valid_data, node_data):
+def plot_3D_trajectories(valid_data, node_data, model_name = "Vanilla Neural ODE"):
 
-   # import pdb; pdb.set_trace();
+    #import pdb; pdb.set_trace();
 
     n_trials, n_timesteps, dim = valid_data.size()
+
+    if torch.is_tensor(valid_data) or torch.is_tensor(node_data):
+        valid_data = valid_data.detach().numpy()
+        node_data = node_data.detach().numpy()
     
 
     fig = plt.figure(figsize=(8,8))
     ax = plt.axes(projection='3d')
 
-    for i in range(node_data.shape[0]): #n_trials):
+    for i in range(n_trials): #n_trials):
         x_valid = valid_data[i]
         x_node = node_data[i]
 
@@ -23,6 +28,6 @@ def plot_3D_trajectories(valid_data, node_data):
     ax.set_xlabel('$x_1$')
     ax.set_ylabel('$x_2$')
     ax.set_zlabel('$x_3$')
-    ax.set_title('Trajectories for Lorenz system and NeuralODE for multiple initial conditions')
+    ax.set_title(f'Trajectories for Lorenz system and {model_name} for multiple initial conditions')
 
     plt.show()
