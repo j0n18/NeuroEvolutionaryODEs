@@ -14,9 +14,9 @@ from example_params import (datamodule_params,
 
 log = logging.getLogger(__name__)
 
-#import pdb; pdb.set_trace()
+import pdb; pdb.set_trace()
 
-chkpt = "C:\\Users\\jonat\\OneDrive\\Desktop\\Deep Learning\\Project\\NeuroEvolutionaryODEs\\NEODEs\\chkpts\\epoch=59-step=600.ckpt"
+chkpt = "(full path to chkpt file)"
 
 node_datamodule = NeuralODEDataModule(**datamodule_params)
 node_datamodule.setup()
